@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br><br>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-1">
+		</div>
+		<div class="col-md-5 bg-info text-white">
+            <p style="font-size: 18px;">設備資訊 :</p>
+            {% if Manufacturer %}
+                <p>製造商 Manufacturer : {{ Manufacturer }} </p>
+            {% endif %}
+            {% if Model %}
+                <p>型號 Model : {{ Model }} </p>
+            {% endif %}
+            {% if FirmwareVersion %}
+                <p>固件版本 Firmware Version : {{ FirmwareVersion }} </p>
+            {% endif %}
+            {% if SerialNumber %}
+                <p>MAC位址 : {{ SerialNumber }} </p>
+            {% endif %}
+            {% if HardwareId %}
+                <p>硬件編號Hardware Id : {{ HardwareId }} </p>
+            {% endif %}
+		</div>
+		<div class="col-md-5 border border-info">
+            <p style="font-size: 18px;">系統時間資訊 :</p>
+            {% if Sysdt_dt %}
+                <p>System Time : {{ Sysdt_dt.Date.UTCDateTime.Time.Hour }}:{{ Sysdt_dt.Date.UTCDateTime.Time.Minute }} </p>
+            {% endif %}
+            {% if Sysdt_year %}
+                <p>系統日期(年月日) : {{ Sysdt_year.Year }}/{{ Sysdt_year.Month }}/{{ Sysdt_year.Day }}  </p>
+            {% endif %}
+            {% if Sysdt_tz %}
+                <p>時區 : {{ Sysdt_tz.TZ }} </p>
+            {% endif %}
+            {% if UserList %}
+                <p style="font-size: 16px;">所有使用者資訊 :</p>
+                {% for User in UserList %}
+                    <p> {{ User.UserLevel }}：{{ User.Username }} </p>
+                {% endfor %}
+            {% else %}
+                <p>Camera didn't return any users</p>
+            {% endif %}
+		</div>
+		<div class="col-md-1">
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-1">
+		</div>
+		<div class="col-md-10">
+
+		</div>
+		<div class="col-md-1">
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+{% if success %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-3">
+        </div>
+        <div class="col-md-6">
+            <div class="alert alert-success alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+                    ×
+                </button>
+                <h5>
+                    登入失敗, 請重新登入!
+                </h5>
+            </div>
+            <script>
+                setTimeout(history.go(-1),1);
+                setTimeout(window.location.reload(),700);
+            </script>
+        </div>
+        <div class="col-md-3">
+		</div>
+	</div>
+</div>
+
+{% endif %}
+<div style="text-align: center; font-size: 30px; font-family: Arial, Helvetica, sans-serif;">PSVT IP CAMERA</div>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-5">
+		</div>
+		<div class="col-md-2">
+
+            <hr>
+			<form class="bd-example text-center" action="{% url 'psvtLogin' %}" method="post" role="form">
+                {% csrf_token %}
+				<div class="form-group">
+					<label for="ipLoginLabel">
+						IP 位址
+					</label>
+					<input type="text" name="ipLogin" placeholder="IP 位址" class="form-control" id="ipLogin" />
+                </div>
+                <div class="form-group">
+					<label for="portLabel">
+						Port
+					</label>
+					<input type="text" name="port" placeholder="Port" class="form-control" id="port" />
+                </div>
+                <div class="form-group">
+					<label for="usernameLabel">
+						Username
+					</label>
+					<input type="text" name="username" placeholder="Username" class="form-control" id="username" />
+				</div>
+				<div class="form-group">
+					<label for="passwordLabel">
+						Password
+					</label>
+					<input type="password" name="password" placeholder="Password" class="form-control" id="password" />
+				</div>
+				<button type="submit" class="btn btn-primary">
+					Connect
+				</button>
+			</form>
+		</div>
+		<div class="col-md-5">
+		</div>
+	</div>
+</div>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+            <br>
+		</div>
+	</div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-8">
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>裝置名稱</th>
+                        <th>IP位址</th>
+                        <th>連線到設備自身軟韌體</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ipScan in ipScans %}
+                        <tr class="{{ ipScan.classSet }}">
+                            <td>{{ ipScan.num }}</td>
+                            <td>{{ ipScan.onvifName }}</td>
+                            <td>{{ ipScan.onvifIp }}</td>
+                            <td><a href="http://{{ ipScan.onvifIpConnect }}">Connect</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-2">
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
