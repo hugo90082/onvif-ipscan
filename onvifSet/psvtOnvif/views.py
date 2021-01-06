@@ -140,9 +140,6 @@ class PsvtHomeView(View):
             return render( request,
 			        'psvtLogin.html', {'success': 'False'})
 
-        
-        resp = mycam.devicemgmt.GetDiscoveryMode()
-        print(resp)
 
 
         #創建ptz服務
