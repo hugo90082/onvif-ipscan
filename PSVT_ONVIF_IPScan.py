@@ -57,4 +57,4 @@ def psvtIPScanOnvif(selfIpScope = None) -> List:
 
 
 psvtIPScanOnvif()
-input('Press Enter to close the window')
+input('Press "Enter" to close the window')
