@@ -1,7 +1,8 @@
 import netifaces
 import re
 from typing import List
-from wsdiscovery.discovery import ThreadedWSDiscovery as WSDiscovery
+from wsdiscovery import WSDiscovery
+import os
 
 ## 發現Onvif設備 IPScan
 def psvtIPScanOnvif(selfIpScope = None) -> List:
@@ -18,6 +19,7 @@ def psvtIPScanOnvif(selfIpScope = None) -> List:
     # 執行WSDiscovery去搜尋區網內IP
     wsd = WSDiscovery()
     wsd.start()
+    wsd.clearRemoteServices()
     searchServices = wsd.searchServices()
     wsd.stop()
 
@@ -26,12 +28,20 @@ def psvtIPScanOnvif(selfIpScope = None) -> List:
     for service in searchServices:
         if str(service.getTypes()).find('onvif') >= 0:
             onvifServices.append(service) 
+            
 
     # 抓取onvif攝像機的IP IP包含在URL裡 
     findIps = []
-    reFindall = 'ONVIF設備斷線'
+    hardwareList = []
+    reFindall = 'Device Error'
     for onvifService in onvifServices:
         findUrl = onvifService.getXAddrs()[0]
+        
+        for i in range(len(onvifService.getScopes())):
+            if str(onvifService.getScopes()[i]).find('/hardware/') >= 0:
+                onvifHardware = str(onvifService.getScopes()[i])[31:]
+                hardwareList.append(onvifHardware)
+
         for i in range(len(onvifService.getScopes())):
             if str(onvifService.getScopes()[i]).find('/name/') >= 0:
 
@@ -39,22 +49,63 @@ def psvtIPScanOnvif(selfIpScope = None) -> List:
                 if re.findall(r'\d+\.\d+\.\d+\.\d+', findUrl)[0]:
                     # 利用正則表達式 來抓取onvif設備回傳的IP位址
                     reFindall = re.findall(r'\d+\.\d+\.\d+\.\d+', findUrl)[0]
-
+                    onvifName = str(onvifService.getScopes()[i])[27:]
+                    try:
+                        onvifMac = psvtFindMac(reFindall)
+                    except:
+                        onvifMac = ''
+                    
                 findIps.append([
                     reFindall, 
-                    str(onvifService.getScopes()[i])[27:],
+                    onvifName,
+                    onvifMac,
                 ])
-                reFindall = 'ONVIF設備斷線'
+                reFindall = 'Device Error'
+                onvifHardware = ''
 
     # 取得帶有與本機IP網段所對應的onvif裝置IP列表
     if len(findIps) <= 0:
-        print('----------------Could not find any ONVIF protocol device！----------------')
+        print('\n-------------------------------Could not find any ONVIF protocol device！-------------------------------')
     else:
-        print('NAME---------------------IP-------------------Connect----------------------')
+        print('\n-Name---------------Hardware-----------IP-----------------Mac---------------------Connect--------------------')
         for i in range(len(findIps)):
             if any(findIps[i][0].startswith(selfIp) for selfIp in selfIpScope):
-                print("|{:23}|{:20}|{:30}|".format(findIps[i][1], findIps[i][0], 'http://'+findIps[i][0]))
+                print("|{:18}|{:18}|{:18}|{:23}|{:26}|".format(
+                    findIps[i][1],
+                    hardwareList[i], 
+                    findIps[i][0], 
+                    findIps[i][2],
+                    'http://'+findIps[i][0],
+                ))
 
 
-psvtIPScanOnvif()
-input('Press "Enter" to close the window')
+def psvtFindMac(onvifIP):
+    arp = os.popen('arp -a').readlines() # 透過arp -a取得IP MAC列表
+    i = 0
+    # 存放IP跟MAC位址
+    arpList = []
+    for allIpMac in arp:
+        allIpMac=allIpMac.strip('\n')
+        if i > 2:
+            ipMacs = allIpMac.split(' ')
+            tmp = []
+            for ipMac in ipMacs:
+                if ipMac != '':
+                    tmp.append(ipMac) # 抓到IP跟MAC序列
+            arpList.append(tmp)
+        i = i + 1
+
+    for arpIpMac in arpList: # 找到MAC
+        if len(arpIpMac) > 1:
+            if arpIpMac[0] == onvifIP:
+                arpFindMac = arpIpMac[1]
+
+    return arpFindMac
+
+## 執行程式
+try:
+    psvtIPScanOnvif()
+except:
+    print('\nPlease check your internet connection and run the file again！')
+
+input('\nPress "Enter" to close the window \n\n')
