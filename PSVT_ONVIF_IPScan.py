@@ -2,7 +2,7 @@ import netifaces
 import re
 from typing import List
 from wsdiscovery import WSDiscovery
-import os
+import subprocess
 
 ## 發現Onvif設備 IPScan
 def psvtIPScanOnvif(selfIpScope = None) -> List:
@@ -80,20 +80,22 @@ def psvtIPScanOnvif(selfIpScope = None) -> List:
 
 
 def psvtFindMac(onvifIP):
-    arp = os.popen('arp -a').readlines() # 透過arp -a取得IP MAC列表
-    i = 0
+    # 透過arp -a取得IP MAC列表
+    subArp = subprocess.check_output(['arp','-a'])
+    arp = subArp.decode('utf-8', errors='ignore')
+    allIpMac=arp.split("\r\n")
+    
     # 存放IP跟MAC位址
     arpList = []
-    for allIpMac in arp:
-        allIpMac=allIpMac.strip('\n')
-        if i > 2:
-            ipMacs = allIpMac.split(' ')
+
+    for i in range(len(allIpMac)):
+        if i > 3:
+            ipMacs = allIpMac[i].split(' ')
             tmp = []
             for ipMac in ipMacs:
                 if ipMac != '':
                     tmp.append(ipMac) # 抓到IP跟MAC序列
             arpList.append(tmp)
-        i = i + 1
 
     for arpIpMac in arpList: # 找到MAC
         if len(arpIpMac) > 1:
